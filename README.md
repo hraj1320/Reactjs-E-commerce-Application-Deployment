@@ -1,5 +1,5 @@
 # Reactjs-E-commerce-Application-Deployment
-Sure! Here's an example of a README file that explains the project, how to deploy and run the React application, and how to build Docker images:
+
 
 ---
 
