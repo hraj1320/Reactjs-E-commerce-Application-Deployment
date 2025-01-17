@@ -1,0 +1,49 @@
+ pipeline {
+    agent any
+
+    environment {
+        registry = 'hraj1320'  // Docker Hub username
+        devDockerRepo = 'hraj1320/dev'  // Dev repo
+        prodDockerRepo = 'hraj1320/prod'  // Prod repo
+        registryCredential = 'docker-credentials-id'  // Jenkins Docker credentials ID
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    def branch = env.BRANCH_NAME ?: 'dev'  // Check kis branch se build ho raha hai
+                    checkout scmGit(branches: [[name: "*/${branch}"]], userRemoteConfigs: [[url: 'https://github.com/hraj1320/Reactjs-E-commerce-Application-Deployment.git']])
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def imageTag = env.BUILD_NUMBER ?: 'latest'  // Use build number as tag
+                    def repo = (env.BRANCH_NAME == 'master') ? prodDockerRepo : devDockerRepo  // Dev/master repo selection
+                    dockerImage = docker.build("${repo}:${imageTag}")  // Build Docker image
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('', registryCredential) {
+                        def repo = (env.BRANCH_NAME == 'master') ? prodDockerRepo : devDockerRepo  // Check dev or prod repo
+                        dockerImage.push("${env.BUILD_NUMBER}")  // Push with build number
+                        dockerImage.push("latest")  // Push latest tag
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
