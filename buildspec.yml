@@ -3,7 +3,14 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Clearing npm cache..."
+      - echo "Cleaning NPM cache..."
       - npm cache clean --force
-      - echo "Installing dependencies..."
-      - npm install --legacy-peer-deps
+      - echo "Installing dependencies with legacy peer deps..."
+      - npm install --legacy-peer-deps || npm install --force
+  build:
+    commands:
+      - echo "Building the application..."
+      - npm run build
+artifacts:
+  files:
+    - '**/*'
